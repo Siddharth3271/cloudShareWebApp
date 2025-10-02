@@ -1,4 +1,4 @@
-import { features, pricingPlans } from "../assets/data";
+import { features, pricingPlans, testimonials } from "../assets/data";
 import CTASection from "../components/landing/CTASection";
 import FeatureSection from "../components/landing/FeatureSection";
 import FooterSection from "../components/landing/FooterSection";
@@ -19,7 +19,7 @@ const Landing=()=>{
             <PricingSection pricingPlans={pricingPlans}/>
 
             {/* Testimonials Section */}
-            <TestimonialSection/>
+            <TestimonialSection testimonials={testimonials}/>
 
             {/* CTA Section */}
             <CTASection/>
