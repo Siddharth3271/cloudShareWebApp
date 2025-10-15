@@ -1,4 +1,8 @@
 package com.siddh.ShareSphereBackend.repository;
 
-public interface UserCreditsRepository {
+import com.siddh.ShareSphereBackend.document.UserCredits;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface UserCreditsRepository extends MongoRepository<UserCredits,String> {
+
 }
