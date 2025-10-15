@@ -15,6 +15,11 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
 
     public ProfileDTO createProfile(ProfileDTO profileDTO){
+
+        if(profileRepository.existsByClerkId(profileDTO.getClerkId())){
+            return updateProfile(profileDTO);
+        }
+
         ProfileDocument profile=ProfileDocument.builder()
                 .clerkId(profileDTO.getClerkId())
                 .email(profileDTO.getEmail())
@@ -41,7 +46,7 @@ public class ProfileService {
 
 
     public ProfileDTO updateProfile(ProfileDTO profileDTO){
-        ProfileDocument existingProfile=profileRepository.findByClerkID(profileDTO.getClerkId());
+        ProfileDocument existingProfile=profileRepository.findByClerkId(profileDTO.getClerkId());
 
         if(existingProfile!=null){
           //update fields on user request
@@ -71,5 +76,16 @@ public class ProfileService {
                     .build();
         }
         return null;
+    }
+
+    public boolean existsByClerkId(String clerkId){
+        return profileRepository.existsByClerkId(clerkId);
+    }
+    public void deleteProfile(String clerkId){
+        ProfileDocument existingProfile=profileRepository.findByClerkId(clerkId);
+
+        if(existingProfile!=null){
+            profileRepository.delete(existingProfile);
+        }
     }
 }
