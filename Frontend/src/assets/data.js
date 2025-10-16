@@ -1,3 +1,4 @@
+import { LayoutDashboard,Upload,Files, CreditCard, Receipt } from "lucide-react";
 export const features = [
     {
         iconName: "ArrowUpCircle",
@@ -106,5 +107,39 @@ export const testimonials = [
         image: "https://randomuser.me/api/portraits/women/65.jpg",
         quote: "Managing project files across multiple teams used to be a nightmare until we found CloudShare. Now everything is organized and accessible exactly when we need it.",
         rating: 4
+    }
+];
+
+//side menu bar options
+export const SIDE_MENU_DATA = [
+    {
+        id: "01",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        path: "/dashboard",
+    },
+    {
+        id: "02",
+        label: "Upload",
+        icon: Upload,
+        path: "/upload",
+    },
+    {
+        id: "03",
+        label: "My Files",
+        icon: Files,
+        path: "/my-files",
+    },
+    {
+        id: "04",
+        label: "Subscription",
+        icon: CreditCard,
+        path: "/subscriptions",
+    },
+    {
+        id: "05",
+        label: "Transactions",
+        icon: Receipt,
+        path: "/transactions",
     }
 ];

@@ -35,7 +35,7 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
 //        System.out.println("Incoming request URI: " + request.getRequestURI());
 
-        if(request.getRequestURI().contains("/webhooks") || (request.getRequestURI().contains("/actuator"))){
+        if(request.getRequestURI().contains("/webhooks") || request.getRequestURI().contains("/actuator") || request.getRequestURI().contains("/public") || request.getRequestURI().contains("/download")){
 //            System.out.println("Webhook/actuator request detected — skipping JWT auth");
             filterChain.doFilter(request,response);
             return;
