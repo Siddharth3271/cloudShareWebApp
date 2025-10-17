@@ -33,7 +33,10 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-//        System.out.println("Incoming request URI: " + request.getRequestURI());
+        System.out.println("Incoming request URI: " + request.getRequestURI());
+
+        System.out.println("Request method: " + request.getMethod() + ", URI: " + request.getRequestURI());
+
 
         if(request.getRequestURI().contains("/webhooks") || request.getRequestURI().contains("/actuator") || request.getRequestURI().contains("/public") || request.getRequestURI().contains("/download")){
 //            System.out.println("Webhook/actuator request detected — skipping JWT auth");
@@ -42,6 +45,7 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
         }
 
         String authHeader=request.getHeader("Authorization");
+        System.out.println("Authorization header: " + authHeader);
         if(authHeader==null || !authHeader.startsWith("Bearer ")){
 //            System.out.println("Missing or invalid Authorization header");
             response.sendError(HttpServletResponse.SC_FORBIDDEN,"Authorization header missing/invalid");

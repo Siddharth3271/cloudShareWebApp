@@ -1,21 +1,33 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
-import { Copy, Download, Eye, File, Globe, Grid, List, Lock, Trash } from "lucide-react";
+import { Copy, Download, Eye, File, Globe, Grid, List, Lock, Trash, Music, Image, Video,FileText } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from 'axios';
 import toast from "react-hot-toast"
 import { Link, useNavigate } from "react-router-dom";
+import FileCard from "../components/FileCard";
+import {apiEndPoints} from "../util/apiEndPoints"
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import LinkShareModal from "../components/LinkShareModel";
 const MyFiles=()=>{
   const [files,setFiles]=useState([]);
   const [viewMode,setViewMode]=useState("list");
   const {getToken}=useAuth();
   const navigate= useNavigate();
+  const [deleteConfirmation,setDeleteConfirmation]=useState({isOpen:false,fileId:null});
+  const [shareModel,setShareModel]=useState({
+    isOpen:false,
+    fileId:null,
+    link:""
+  })
+
+  //fetching files from backend
   const fetchFiles=async()=>{
     try{
       const token=await getToken();
-      const response= await axios.get('http://localhost:8081/api/v1.0/files/my',{headers:{Authorization:`Bearer ${token}`}})
+      const response= await axios.get(apiEndPoints.FETCH_FILES,{headers:{Authorization:`Bearer ${token}`}})
       if(response.status===200){
-        // console.log(response.data)
+        console.log(response.data)
         setFiles(response.data);
       }
     }
@@ -24,6 +36,113 @@ const MyFiles=()=>{
       toast.error('Error fetching the files from server: ',error.message);
     }
   }
+
+  const getFileIcon=(file)=>{
+        const extension=file.name.split('.').pop().toLowerCase();
+        if(['jpg','jpeg','png','gif','svg','webp'].includes(extension)){
+            return <Image size={24} className="text-orange-500"/>
+        }
+        if(['mp4','webm','mov','mkv','avi'].includes(extension)){
+            return <Video size={24} className="text-blue-500"/>
+        }
+        if(['mp3','wav','ogg','m4a','flac'].includes(extension)){
+            return <Music size={24} className="text-green-500"/>
+        }
+        if(['pdf','doc','docx','docx','rtf','xlsx','xls','pptx','ppt'].includes(extension)){
+            return <FileText size={24} className="text-amber-500"/>
+        }
+
+        return <FileIcon size={24} className='text-amber-800'/>
+    }
+
+    //toggling b/w public and private for a file
+    const togglePublic = async (fileToUpdate)=>{
+      try{
+        const token=await getToken();
+        await axios.patch(apiEndPoints.TOGGLE_FILE(fileToUpdate.id),{},{headers:{Authorization:`Bearer ${token}`}})
+        setFiles(files.map((file)=>file.id===fileToUpdate.id ? {...file,isPublic: !file.isPublic}:file));
+      }
+      catch(error){
+        console.error('Error toggling file status ',error.message)
+      }
+    }
+
+    //handle file download
+    const handleDownload= async (file)=>{
+      try{
+        const token=await getToken();
+        const response=await axios.get(apiEndPoints.DOWNLOAD_FILE(file.id),{},{headers:{Authorization:`Bearer ${token}`},responseType: 'blob'})
+
+        //create a blob url and trigger download
+        const url=window.URL.createObjectURL(new Blob([response.data]));
+        const link=document.createElement("a");
+        link.href=url;
+        link.setAttribute("download",file.name)
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);  //cleaning the url
+      }
+      catch(error){
+        console.error('Download Failed ',error);
+        toast.error("Error downloading file ",error.message);
+      }
+    }
+    //delete confirmation button closing
+    const closeDeleteConfirmation=()=>{
+        setDeleteConfirmation({
+            isOpen:false,
+            fileId:null
+        })
+    }
+    
+    //opening delete confirmation
+    const openDeleteConfirmation = (fileId) => {
+        setDeleteConfirmation({
+            isOpen: true,
+            fileId
+        })
+    }
+
+    //opening the share link model
+    const openShareModel=(fileId)=>{
+      const link=`${window.location.origin}/file/${fileId}`;
+      setShareModel({
+        isOpen:true,
+        fileId,
+        link
+      })
+    }
+
+    //closing the share link model
+    const closeShareModel=()=>{
+      setShareModel({
+        isOpen:false,
+        fileId:null,
+        link:""
+      })
+    }
+
+    //handle deleting file after confirmation
+    const handleDelete= async ()=>{
+      const fileId=deleteConfirmation.fileId;
+      if(!fileId) return;
+      try{
+        const token=await getToken();
+        const response=await axios.delete(apiEndPoints.DELETE_FILE(fileId),{headers:{Authorization:`Bearer ${token}`}})
+        if(response.status===204){
+          setFiles(files.filter((file)=>file.id!==fileId));
+          closeDeleteConfirmation();
+        }
+        else{
+          toast.error("Error Deleting the file");
+        }
+      }
+      catch(error){
+        console.error('Deleting Failed ',error);
+        toast.error("Error Deleting file ",error.message);
+      }
+    }
 
   useEffect(()=>{
     fetchFiles();
@@ -58,7 +177,17 @@ const MyFiles=()=>{
               <button onClick={()=>navigate("/upload")} className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors cursor-pointer">Go to Upload</button>
         </div>
       ):viewMode==="grid" ? (
-        <div>Grid View</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {files.map((file)=>(
+            <FileCard
+            key={file.id}
+            onDelete={openDeleteConfirmation}
+            onTogglePublic={togglePublic}
+            onDownload={handleDownload}
+            onShareLink={openShareModel}
+            file={file}/>
+          ))}
+        </div>
       ):(
         <div className="overflow-x-auto bg-white rounded-lg shadow">
           <table className="min-w-full">
@@ -76,7 +205,7 @@ const MyFiles=()=>{
                 <tr key={file.id} className="hover:bg-gray-100 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     <div className="flex items-center gap-2">
-                      <File size={20} className="text-blue-600"/>
+                      {getFileIcon(file)}
                       {file.name}
                     </div>
                   </td>
@@ -89,7 +218,7 @@ const MyFiles=()=>{
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                         <div className="flex items-center gap-4">
                           <button 
-                          
+                          onClick={()=>togglePublic(file)}
                           className="flex items-center gap-2 cursor-pointer group"
                           >
                             {file.isPublic ? (
@@ -106,7 +235,9 @@ const MyFiles=()=>{
                             )}
                           </button>
                           {file.isPublic && (
-                            <button className="flex items-center gap-2 cursor-pointer text-blue-600">
+                            <button 
+                            onClick={()=>openShareModel(file.id)}
+                            className="flex items-center gap-2 cursor-pointer text-blue-600">
                               <Copy size={16}/>
                               <span className="group-hover:underline">Share Link</span>
                             </button>
@@ -117,6 +248,7 @@ const MyFiles=()=>{
                           <div className="grid grid-cols-3 gap-4">
                             <div className="flex justify-center">
                                 <button
+                                onClick={()=>handleDownload(file)}
                                 title="Download"
                                 className="text-gray-500 hover:text-blue-700">
                                   <Download size={18}/>
@@ -124,16 +256,17 @@ const MyFiles=()=>{
                             </div>
                             <div className="flex justify-center">
                               <button 
+                              onClick={()=>openDeleteConfirmation(file.id)}
                               title="Delete"
-                              className="text-gray-500 hover:text-red-700">
+                              className="text-gray-500 hover:text-red-700 hover:cursor-pointer">
                                 <Trash size={18}/>
                               </button>
                             </div>
                             <div className="flex justify-center">
                               {file.isPublic ? (
-                                <Link to={`/file/${file.id}`} className="text-gray-600 hover:text-blue-700">
+                                <a href={`/file/${file.id}`} title="View File" target="_blank" rel="noreferrer" className="text-gray-600 hover:text-blue-700">
                                   <Eye size={18}/>
-                                </Link>
+                                </a>
                               ):(
                                 <span className="w-[18px]"></span>
                               )}
@@ -146,6 +279,25 @@ const MyFiles=()=>{
           </table>
         </div>
       )}
+      {/*Delete Confirmation Dialog */}
+      <ConfirmationDialog
+      isOpen={deleteConfirmation.isOpen}
+      onClose={closeDeleteConfirmation}
+      title="Delete File"
+      message="Are you sure to delete this? (This can't be undone)"
+      confirmText="Delete"
+      cancelText="Cancel"
+      onConfirm={handleDelete}
+      confirmationButtonClass="bg-red-600 hover:bg-red-700"
+      />
+
+      {/*Share Link Modal */}
+      <LinkShareModal
+      isOpen={shareModel.isOpen}
+      onClose={closeShareModel}
+      link={shareModel.link}
+      title="Share File"
+      />
       </div>
     </DashboardLayout>
     )
