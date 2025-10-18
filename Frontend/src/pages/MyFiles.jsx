@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
-import { Copy, Download, Eye, File, Globe, Grid, List, Lock, Trash, Music, Image, Video,FileText } from "lucide-react";
+import { Copy, Download, Eye, File, Globe, Grid, List, Lock, Trash, Music, Image, Video,FileText, FileIcon } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 import axios from 'axios';
 import toast from "react-hot-toast"
@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import FileCard from "../components/FileCard";
 import {apiEndPoints} from "../util/apiEndPoints"
 import ConfirmationDialog from "../components/ConfirmationDialog";
-import LinkShareModal from "../components/LinkShareModel";
+import LinkShareModal from "../components/LinkShareModal";
 const MyFiles=()=>{
   const [files,setFiles]=useState([]);
   const [viewMode,setViewMode]=useState("list");
