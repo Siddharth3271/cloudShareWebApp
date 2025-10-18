@@ -8,8 +8,10 @@ import Upload from './pages/Upload';
 import Subscription from './pages/Subscription';
 import { RedirectToSignIn, SignedOut, SignedIn } from '@clerk/clerk-react'
 import {Toaster} from "react-hot-toast"
+import {UserCreditsProvider } from './context/UserCreditsContext'
 const App = () => {
   return (
+    <UserCreditsProvider>
     <BrowserRouter>
     <Toaster/>
     <Routes>
@@ -49,6 +51,7 @@ const App = () => {
 
     </Routes>
     </BrowserRouter>
+    </UserCreditsProvider>
   )
 }
 

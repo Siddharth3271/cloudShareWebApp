@@ -148,6 +148,13 @@ const MyFiles=()=>{
     fetchFiles();
   },[getToken])
 
+    const formatfileSize=(bytes)=>{
+        if(bytes<1024) return bytes+' B';
+
+        else if(bytes<1048576) return (bytes/1024).toFixed(1)+' KB';
+        else return (bytes/1048576).toFixed(1)+' MB';
+    }
+
     return (
     <DashboardLayout activeMenu="My Files">
       <div className="p-6">
@@ -210,7 +217,7 @@ const MyFiles=()=>{
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                        {(file.size/1024).toFixed(1)} KB
+                        {formatfileSize(file.size)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                         {new Date(file.uploadedAt).toLocaleDateString()}
@@ -250,7 +257,7 @@ const MyFiles=()=>{
                                 <button
                                 onClick={()=>handleDownload(file)}
                                 title="Download"
-                                className="text-gray-500 hover:text-blue-700">
+                                className="text-gray-500 hover:text-blue-700 cursor-pointer">
                                   <Download size={18}/>
                                 </button>
                             </div>
