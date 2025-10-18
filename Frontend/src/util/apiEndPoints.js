@@ -8,6 +8,7 @@ export const apiEndPoints={
     GET_CREDITS:`${BASE_URL}/users/credits`,
     UPLOAD_FILE:`${BASE_URL}/files/upload`,
     CREATE_ORDER:`${BASE_URL}/payments/create-order`,
-    VERIFY_PAYMENT:`${BASE_URL}/payments/verify-payment`
+    VERIFY_PAYMENT:`${BASE_URL}/payments/verify-payment`,
+    TRANSACTIONS:`${BASE_URL}/transactions`
 }
 
